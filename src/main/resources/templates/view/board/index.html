@@ -4,10 +4,55 @@
       layout:decorator="~{layout/layout}">
     <th:block layout:fragment="content">
         <script type="text/javascript">
+            $(document).ready(()=>{
+                fn_getBoard();
+
+                //신규등록
+                $('#btnReg').on('click',()=>{
+                    location.href="/board/edit";
+                });
+            })
+            function fn_getBoard() {
+                $.ajax({
+                    url:'/board',
+                    type:'get',
+                    error:(msg)=>{
+                      alert(msg);
+                    },
+                    success:(result)=>{
+                        $('#example').DataTable({
+                            ajax:'/board',
+                            data: result.content,
+                            columns: [
+                                {data:'id'},
+                                {data:'title'},
+                                {data:'regDt'}
+                            ]
+                        })
+                    }
+                });
+            }
+
         </script>
-        <form action="/board" method="post">
-            <input type="text" name="title"/>
-            <button>submit</button>
-        </form>
+        <div class="card-header">
+            게시판
+            <div class="float-end">
+                <span id="btnReg" class="btn btn-sm btn-primary">신규등록</span>
+            </div>
+        </div>
+        <div class="card mb-4">
+            <div class="dataTable-container">
+                <table id="example">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>제목</th>
+                            <th>등록일자</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div th:text="${boardList}"></div>
+        </div>
     </th:block>
 </html>

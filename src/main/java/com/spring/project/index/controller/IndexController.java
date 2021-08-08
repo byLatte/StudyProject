@@ -9,6 +9,7 @@ public class IndexController {
 
     @GetMapping("/index")
     public String index(Model model){
+        model.addAttribute("currentPage","index");
         return "view/index";
     }
 }

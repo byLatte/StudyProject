@@ -7,7 +7,9 @@
     <div id="layoutSidenav">
         <th:block th:replace="/layout/fragment/left :: leftFragment"/>
         <div id="layoutSidenav_content">
-            <th:block layout:fragment="content"></th:block>
+            <div class="container-fluid px-4 mt-4">
+                <th:block layout:fragment="content"/>
+            </div>
             <th:block th:replace="/layout/fragment/footer :: footerFragment"/>
         </div>
     </div>

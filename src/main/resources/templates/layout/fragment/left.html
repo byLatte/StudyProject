@@ -5,16 +5,19 @@
             <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu">
                     <div class="nav">
-                        <div class="sb-sidenav-menu-heading">Core</div>
+                        <div class="sb-sidenav-menu-heading">Menu</div>
                         <a th:classappend="${currentPage eq 'index'} ? 'active' : '' " class="nav-link" href="/index">
                             <div class="sb-nav-link-icon active"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
                         </a>
-                        <div class="sb-sidenav-menu-heading">Menu</div>
-                        <a th:classappend="${currentPage eq 'board'} ? 'active' : '' " class="nav-link" href="/board/index">
+                        <a th:classappend="${currentPage eq 'chat'} ? 'active' : '' " class="nav-link" href="/chat/index">
                             <div class="sb-nav-link-icon active"><i class="fas fa-tachometer-alt"></i></div>
-                            게시판
+                            채팅
                         </a>
+<!--                        <a th:classappend="${currentPage eq 'board'} ? 'active' : '' " class="nav-link" href="/board/index">-->
+<!--                            <div class="sb-nav-link-icon active"><i class="fas fa-tachometer-alt"></i></div>-->
+<!--                            게시판-->
+<!--                        </a>-->
                     </div>
                 </div>
             </nav>

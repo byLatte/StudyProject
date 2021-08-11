@@ -29,21 +29,28 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-            .antMatchers("/login").permitAll()
-            .antMatchers("/signup").permitAll()
+            .antMatchers("/user/index").permitAll()
+            .antMatchers("/user/signup").permitAll()
+            .antMatchers("/db/**").permitAll()
             .anyRequest().authenticated();
 
         http.formLogin()
-            .loginProcessingUrl("/login")
-            .loginPage("/login")
-            .failureUrl("/login?error")
+            .loginProcessingUrl("/user/login")
+            .loginPage("/user/index")
+            .failureUrl("/user/index?error")
             .defaultSuccessUrl("/index",true)
-            .usernameParameter("userId").usernameParameter("password")
+            .usernameParameter("userId").passwordParameter("password")
             .and();
 
         http.logout()
             .logoutRequestMatcher(new AntPathRequestMatcher("/logout**"))
             .logoutSuccessUrl("/login");
+
+        // h2 권한
+        http.csrf()
+            .ignoringAntMatchers("/db/**");
+        http.headers()
+            .frameOptions().disable();
     }
 
     @Configuration

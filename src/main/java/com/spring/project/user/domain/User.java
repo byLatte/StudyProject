@@ -4,6 +4,8 @@ package com.spring.project.user.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import javax.persistence.*;
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.List;
 @Entity
 @Data
 @AllArgsConstructor
+@RequiredArgsConstructor
 public class User {
 
     @Id
@@ -21,6 +24,7 @@ public class User {
     @JsonIgnore // json 제외
     private String password;
 
-    @OneToMany(mappedBy = "user")
+    //LAZY 지연로딩, EAGER 즉시로딩
+    @OneToMany(mappedBy = "user",fetch = FetchType.EAGER)
     private List<LoginHist> loginHists;
 }

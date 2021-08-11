@@ -15,10 +15,10 @@ public class LoginHist {
     @Id
     @GeneratedValue
     private Integer id;
-    private Integer userNo;
     @CreationTimestamp
     private LocalDateTime loginDt;
-    @ManyToOne
-    @JoinColumn(nullable = true, name = "loginHists")
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(nullable = true, name = "userNo")
     private User user;
 }

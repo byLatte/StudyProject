@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 public class LoginService {
 
     private final UserRepository userRepository;
-    private final LoginHistRepository loginHistRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -22,6 +21,8 @@ public class LoginService {
         userRepository.save(user);
     }
 
-    public void loginHistSave(int userNo){
+    public User findByUserId(String userId){
+        return userRepository.findByUserId(userId);
     }
+
 }

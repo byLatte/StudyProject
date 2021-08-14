@@ -6,10 +6,6 @@
                 <div class="sb-sidenav-menu">
                     <div class="nav">
                         <div class="sb-sidenav-menu-heading">Menu</div>
-                        <a th:classappend="${currentPage eq 'index'} ? 'active' : '' " class="nav-link" href="/index">
-                            <div class="sb-nav-link-icon active"><i class="fas fa-tachometer-alt"></i></div>
-                            Dashboard
-                        </a>
                         <a th:classappend="${currentPage eq 'chat'} ? 'active' : '' " class="nav-link" href="/chat/index">
                             <div class="sb-nav-link-icon active"><i class="fas fa-tachometer-alt"></i></div>
                             채팅

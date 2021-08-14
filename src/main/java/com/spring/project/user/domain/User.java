@@ -27,6 +27,6 @@ public class User {
     private String password;
 
     //LAZY 지연로딩, EAGER 즉시로딩
-    @OneToMany(mappedBy = "user",fetch = FetchType.EAGER)
-    private List<LoginHist> loginHists;
+//    @OneToMany(mappedBy = "user",fetch = FetchType.EAGER)
+//    private List<LoginHist> loginHists;
 }

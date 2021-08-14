@@ -1,8 +1,117 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://thymeleaf.org/extras/spring-security"
       layout:decorator="~{layout/layout}">
     <th:block layout:fragment="content">
-        CHAT
+        <style>
+            #msgArea li{
+                list-style: none;
+            }
+            .chat-yellow {
+                background: #FFEC46
+            }
+            .chat-username{
+                font-weight: bold;
+            }
+            .chat-msg-box{
+                border-radius: 5px;
+                display: inline-block;
+                padding: 5px;
+            }
+            .chat-enter-box{
+                background: #ABBECF;
+                text-align: center;
+            }
+            #msgArea{
+                height: 500px;
+                max-height: 500px;
+                overflow-y: auto;
+                padding: 20px;
+            }
+            .chat-date{
+                margin: 5px;
+                font-size: 12px;
+                vertical-align: bottom;
+            }
+        </style>
+        <script th:inline="javascript">
+            $(document).ready(function(){
+                $('#sendMsg').keydown((key)=>{
+                    if(key.keyCode == 13){
+                        fn_sendMsg();
+                    }
+                })
+            })
+            const userName = [[${#authentication.principal.username}]]
+
+            const ws = new SockJS("http://localhost:8080/ws/chat")
+            ws.onmessage = (msg)=>{
+                // console.log(" ON MESSAGE : " , msg);
+                const data = msg.data.split(":");
+                const name = data[0];
+                const sendMsg = data[1];
+                const msgForm = [];
+                const date = new Date(msg.timeStamp);
+
+                if(name == ""){
+                    msgForm.push("<div class='chat-enter-box mb-3'>"+sendMsg+"</div>");
+                }
+                // 자기 메세지
+                else if(name == userName){
+                    msgForm.push("<ul class='text-right'>");
+                    msgForm.push("  <li>");
+                    msgForm.push(       "<span class='chat-date'>"+date.getHours() +":"+date.getMinutes()+"</span>");
+                    msgForm.push(       "<span class='chat-msg-box chat-yellow'>"+ sendMsg.replace(/\n/g,'<br/>') +"</span>");
+                    msgForm.push("  </li>");
+                    msgForm.push("</ur>");
+                }else{
+                    msgForm.push("<ul>");
+                    msgForm.push("  <li class='chat-username'>"+ name +"</li>");
+                    msgForm.push("  <li>");
+                    msgForm.push(       "<span class='chat-msg-box bg-white'>"+ sendMsg.replace(/\n/g,'<br/>') +"</span>");
+                    msgForm.push(       "<span class='chat-date'>"+date.getHours() +":"+date.getMinutes()+"</span>");
+                    msgForm.push("  </li>");
+                    msgForm.push("</ur>");
+                }
+
+                $('#msgArea').append(msgForm.join(''));
+            }
+            ws.onopen = (e)=>{
+                const msg = ":"+userName + " 님 이 입장하셨습니다.";
+                ws.send(msg);
+            }
+            ws.onclose = (e)=>{
+                const msg = userName + " 님이 나가셨습니다.";
+                ws.send(msg);
+            }
+
+            function fn_sendMsg(){
+                if($('#sendMsg').val() == '') return false;
+
+                const msg = userName + ":"+ escapeHTML($('#sendMsg').val());
+                $('#sendMsg').val('');
+                ws.send(msg);
+            }
+        </script>
+        <div class="p-3 col-md-4" style="background:#B3C8DA">
+            <table class="w-100">
+                <tr>
+                    <td>
+                        <div id="msgArea" name="msgArea"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="input-group">
+                            <textarea class="form-control" type="text" id="sendMsg" name="sendMsg" placeholder="메세지를 입력하세요."></textarea>
+                            <button class="chat-yellow btn btn-sm float-end" onclick="fn_sendMsg()">
+                                전송
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </th:block>
 </html>

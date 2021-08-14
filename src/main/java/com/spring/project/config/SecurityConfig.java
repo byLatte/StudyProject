@@ -14,7 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import java.util.Base64;
 
 @Configuration
 @EnableWebSecurity
@@ -51,6 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .ignoringAntMatchers("/db/**");
         http.headers()
             .frameOptions().disable();
+
     }
 
     @Configuration

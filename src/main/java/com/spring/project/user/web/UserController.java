@@ -3,6 +3,7 @@ package com.spring.project.user.web;
 import com.spring.project.user.domain.User;
 import com.spring.project.user.model.UserForm;
 import com.spring.project.user.service.LoginService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +20,7 @@ import java.util.regex.Pattern;
 
 @Controller
 @RequestMapping("/user")
+@RequiredArgsConstructor
 public class UserController {
 
     private final LoginService loginService;
@@ -27,10 +29,6 @@ public class UserController {
     private static String pwdRegex = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{4,}$";
 
     private Pattern pattern;
-
-    public UserController(LoginService loginService) {
-        this.loginService = loginService;
-    }
 
     // ModelAttribute userForm initialize
     @ModelAttribute

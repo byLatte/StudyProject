@@ -43,8 +43,27 @@
                 })
             })
             const userName = [[${#authentication.principal.username}]]
+            let ws;
+                ws = new SockJS("http://localhost:8080/ws/chat");
+            function fn_createChatRoom(){
+                $.ajax({
+                    url : '/chat/room',
+                    type: 'POST',
+                    data : {
+                        sender : userName
+                    },
+                    beforeSend:(xhr)=>{
+                        // CSRF 때문에 token 필요
+                        xhr.setRequestHeader([[${_csrf.headerName}]],[[${_csrf.token}]]);
+                    },
+                    error: (error)=>{
+                        console.log(error);
+                    },
+                    success :(json)=>{
 
-            const ws = new SockJS("http://localhost:8080/ws/chat")
+                    }
+                });
+            }
             ws.onmessage = (msg)=>{
                 // console.log(" ON MESSAGE : " , msg);
                 const data = msg.data.split(":");
@@ -77,8 +96,12 @@
                 $('#msgArea').append(msgForm.join(''));
             }
             ws.onopen = (e)=>{
-                const msg = ":"+userName + " 님 이 입장하셨습니다.";
-                ws.send(msg);
+                // const msg = ":"+userName + " 님 이 입장하셨습니다.";
+                const msg = {
+                    writer : userName,
+                    type : 'ENTER'
+                }
+                ws.send(JSON.stringify(msg));
             }
             ws.onclose = (e)=>{
                 const msg = userName + " 님이 나가셨습니다.";
@@ -111,6 +134,7 @@
                     </td>
                 </tr>
             </table>
+            <button onclick="fn_createChatRoom()">생성</button>
         </div>
     </th:block>
 </html>

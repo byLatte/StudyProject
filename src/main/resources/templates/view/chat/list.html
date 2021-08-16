@@ -3,5 +3,61 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorator="~{layout/layout}">
     <th:block layout:fragment="content">
+        <script th:inline="javascript">
+            const userName = [[${#authentication.principal.username}]];
+            let  ws = new SockJS("http://localhost:8080/ws/chat");
+
+            function fn_chatConnect(roomId){
+                const msg = {
+                    roomId : roomId,
+                    sender : userName,
+                    type : 'ENTER',
+                    message : $('#message').val()
+                }
+                ws.send(JSON.stringify(msg));
+            }
+
+            function fn_chatSend(roomId){
+                const msg = {
+                    roomId : roomId,
+                    sender : userName,
+                    type : 'MESSAGE',
+                    message : $('#message').val()
+                }
+                ws.send(JSON.stringify(msg));
+            }
+
+            ws.onopen = (e)=>{
+                const msg = {
+                    sender : userName
+                }
+                ws.send(JSON.stringify(msg));
+            }
+            ws.onclose = ()=>{
+                const msg = {
+                    sender : userName,
+                    type : 'LEAVE'
+                }
+                ws.send(JSON.stringify(msg));
+            }
+            ws.onmessage = (msg)=>{
+                console.log(" msg " , msg);
+            }
+
+        </script>
+        <table>
+            <tr>
+                <th>보낸사람</th>
+            </tr>
+            <tr th:each="room : ${rooms}">
+                <td th:text="${room.getSender()}"></td>
+                <td th:text="${room.getRoomId()}"></td>
+                <td>
+                    <input type="text" id="message" name="message" />
+                    <button th:onclick="fn_chatConnect([[${room.getRoomId()}]])">connect</button>
+                    <button th:onclick="fn_chatSend([[${room.getRoomId()}]])">send</button>
+                </td>
+            </tr>
+        </table>
     </th:block>
 </html>

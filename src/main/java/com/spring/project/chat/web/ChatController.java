@@ -25,6 +25,7 @@ public class ChatController {
     @GetMapping("/list")
     public String list(Model model){
         model.addAttribute("currentPage","chatList");
+        model.addAttribute("rooms",chatService.findAll());
         return "view/chat/list";
     }
 

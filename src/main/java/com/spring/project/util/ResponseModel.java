@@ -1,31 +1,43 @@
 package com.spring.project.util;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
+
+import java.time.LocalDateTime;
 
 /**
  * responseForm Model
  */
 @Getter
 @ToString
+@AllArgsConstructor
 public class ResponseModel {
-    private int affected;
+    private LocalDateTime timestamp = LocalDateTime.now();
+    private int status;
     private String message;
-    private Object object;
+    private Object data;
 
-    public ResponseModel(int affected) {
-        this.affected = affected;
+    public ResponseModel(){
         this.message = "처리 되었습니다.";
     }
 
-    public ResponseModel(int affected, String message) {
-        this.affected = affected;
-        this.message = message;
+    public static ResponseModel create(){
+        return new ResponseModel();
     }
 
-    public ResponseModel(int affected, String message, Object object) {
-        this.affected = affected;
+    public ResponseModel status(int status){
+        this.status = status;
+        return this;
+    }
+
+    public ResponseModel message(String message){
         this.message = message;
-        this.object = object;
+        return this;
+    }
+
+    public ResponseModel data(Object object){
+        this.data = object;
+        return this;
     }
 }

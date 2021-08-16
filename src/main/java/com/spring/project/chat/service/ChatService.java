@@ -5,6 +5,8 @@ import com.spring.project.chat.repository.ChatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -13,9 +15,20 @@ public class ChatService {
 
     private final ChatRepository chatRepository;
 
-    public void save(ChatRoom chatRoom){
+    public ChatRoom save(ChatRoom chatRoom){
         String uid = UUID.randomUUID().toString();
         chatRoom.setRoomId(uid.substring(0,uid.indexOf("-")));
         chatRepository.save(chatRoom);
+        return chatRoom;
+    }
+
+    public ChatRoom findByRoomId(String roomId){
+        return chatRepository.findByRoomId(roomId);
+    }
+
+    public List<ChatRoom> findAll(){
+        List chatRooms = chatRepository.findAll();
+        Collections.reverse(chatRooms);
+        return chatRooms;
     }
 }

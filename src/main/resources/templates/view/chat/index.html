@@ -42,37 +42,25 @@
                     }
                 })
             })
-            const userName = [[${#authentication.principal.username}]]
-            let ws;
-                ws = new SockJS("http://localhost:8080/ws/chat");
-            function fn_createChatRoom(){
-                $.ajax({
-                    url : '/chat/room',
-                    type: 'POST',
-                    data : {
-                        sender : userName
-                    },
-                    beforeSend:(xhr)=>{
-                        // CSRF 때문에 token 필요
-                        xhr.setRequestHeader([[${_csrf.headerName}]],[[${_csrf.token}]]);
-                    },
-                    error: (error)=>{
-                        console.log(error);
-                    },
-                    success :(json)=>{
+            const userName = [[${#authentication.principal.username}]];
 
-                    }
-                });
-            }
+            let ws = new SockJS("http://localhost:8080/ws/chat");
+            let roomId;
+
             ws.onmessage = (msg)=>{
-                // console.log(" ON MESSAGE : " , msg);
+                console.log(" ON MESSAGE : " , msg);
                 const data = msg.data.split(":");
                 const name = data[0];
                 const sendMsg = data[1];
                 const msgForm = [];
                 const date = new Date(msg.timeStamp);
 
-                if(name == ""){
+                // 생성
+                if(name == "room_id"){
+                    roomId = sendMsg;
+                }
+                // 입장
+                else if(name == ""){
                     msgForm.push("<div class='chat-enter-box mb-3'>"+sendMsg+"</div>");
                 }
                 // 자기 메세지
@@ -95,25 +83,32 @@
 
                 $('#msgArea').append(msgForm.join(''));
             }
+
             ws.onopen = (e)=>{
-                // const msg = ":"+userName + " 님 이 입장하셨습니다.";
                 const msg = {
-                    writer : userName,
-                    type : 'ENTER'
+                    sender : userName,
+                    type : 'CREATE'
                 }
                 ws.send(JSON.stringify(msg));
             }
             ws.onclose = (e)=>{
-                const msg = userName + " 님이 나가셨습니다.";
-                ws.send(msg);
+                const msg = {
+                    sender : userName,
+                    type: 'LEAVE'
+                }
+                ws.send(JSON.stringify(msg));
             }
 
             function fn_sendMsg(){
                 if($('#sendMsg').val() == '') return false;
-
-                const msg = userName + ":"+ escapeHTML($('#sendMsg').val());
+                const msg = {
+                    roomId : roomId,
+                    sender : userName,
+                    type : 'MESSAGE',
+                    message : escapeHTML($('#sendMsg').val())
+                }
                 $('#sendMsg').val('');
-                ws.send(msg);
+                ws.send(JSON.stringify(msg));
             }
         </script>
         <div class="p-3 col-md-4" style="background:#B3C8DA">
@@ -134,7 +129,6 @@
                     </td>
                 </tr>
             </table>
-            <button onclick="fn_createChatRoom()">생성</button>
         </div>
     </th:block>
 </html>

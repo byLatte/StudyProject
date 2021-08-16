@@ -37,7 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .loginProcessingUrl("/user/login")
             .loginPage("/user/index")
             .failureUrl("/user/index?error")
-            .defaultSuccessUrl("/index",true)
+            .defaultSuccessUrl("/chat/index",true)
             .usernameParameter("userId").passwordParameter("password")
             .and();
 
@@ -46,8 +46,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .logoutSuccessUrl("/login");
 
         // h2 권한
-        http.csrf()
-            .ignoringAntMatchers("/db/**");
+//        http.csrf()
+//            .ignoringAntMatchers("/db/**");
+        http.csrf().disable();
         http.headers()
             .frameOptions().disable();
 

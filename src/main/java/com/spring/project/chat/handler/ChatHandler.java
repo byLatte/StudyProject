@@ -4,36 +4,42 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.project.chat.model.ChatMessage;
 import com.spring.project.chat.model.ChatRoom;
 import com.spring.project.chat.model.MessageType;
-import com.spring.project.chat.repository.ChatRepository;
+import com.spring.project.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class ChatHandler extends TextWebSocketHandler {
-    private final ChatRepository chatRepository;
     private final ObjectMapper objectMapper;
-    private static List<WebSocketSession> list = new ArrayList<>();
+    private final ChatService chatService;
+//    private static Map<String,WebSocketSession> list = new LinkedList<>();
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         //payload 전송되는 데이터
         String payload = message.getPayload();
+        log.info("payload " + payload);
         ChatMessage chatMessage = objectMapper.readValue(payload, ChatMessage.class);// object 맵핑!
-        ChatRoom chatRoom = chatRepository.findRoomById(chatMessage.getRoomId());
+        ChatRoom chatRoom = chatService.findByRoomId(chatMessage.getRoomId());
+        //생성
+        if(chatMessage.getType() == MessageType.CREATE){
+            chatRoom = chatService.save(ChatRoom.create().sender(chatMessage.getSender()).webSocketSession(session));
 
+            session.sendMessage(new TextMessage("room_id:"+chatRoom.getRoomId()));
+        }
         // 입장
-        if(chatMessage.getType() == MessageType.ENTER){
-            chatMessage.setMessage(chatMessage.getSender() + " 님이 입장하셨습니다.");
+        else if(chatMessage.getType() == MessageType.ENTER){
+            chatRoom.webSocketSession(session);
+            chatMessage.setMessage(":"+chatMessage.getSender() + " 님이 입장하셨습니다.");
+            for(WebSocketSession wss : chatRoom.getWebSocketSession()){
+                wss.sendMessage(new TextMessage(chatMessage.getMessage()));
+            }
         }
         //떠남
         else if(chatMessage.getType() == MessageType.LEAVE){
@@ -41,29 +47,14 @@ public class ChatHandler extends TextWebSocketHandler {
         }
         //메세지
         else if(chatMessage.getType() == MessageType.MESSAGE){
+            log.info("msg " + chatMessage.getMessage());
             chatMessage.setMessage(chatMessage.getSender() + ":"+chatMessage.getMessage());
-        }
-
-        for(WebSocketSession ws : list){
-            ws.sendMessage(new TextMessage(chatMessage.getMessage()));
-        }
-    }
-
-
-    // 접속
-    @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        list.add(session);
-        log.info(session + " 접속함");
-    }
-
-    // 접속 해제
-    @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        log.info(session + " 접속해제");
-        list.remove(session);
-        for(WebSocketSession socketSession : list){
-            socketSession.sendMessage(new TextMessage("나감"));
+            for(WebSocketSession wss : chatRoom.getWebSocketSession()){
+                wss.sendMessage(new TextMessage(chatMessage.getMessage()));
+            }
+        }else{
+            log.info("ADMIN 입장");
         }
     }
+
 }

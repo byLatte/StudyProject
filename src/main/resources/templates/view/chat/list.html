@@ -1,63 +1,40 @@
 <!DOCTYPE html>
+import {hi} from '/js/storage.js'
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorator="~{layout/layout}">
     <th:block layout:fragment="content">
         <script th:inline="javascript">
             const userName = [[${#authentication.principal.username}]];
-            let  ws = new SockJS("http://localhost:8080/ws/chat");
+            const ws = new SockJS("/stomp/chat");
+            const stompClient = Stomp.over(ws);
+            const chatList = new Set();
 
-            function fn_chatConnect(roomId){
-                const msg = {
-                    roomId : roomId,
-                    sender : userName,
-                    type : 'ENTER',
-                    message : $('#message').val()
-                }
-                ws.send(JSON.stringify(msg));
-            }
+            stompClient.connect({},function(){
+                stompClient.subscribe('/topic/admin',(frame)=>{
+                    const info = JSON.parse(frame.body);
+                    const _html = [];
+                    if(!chatList.has(info.sender)){
+                        chatList.add(info.sender);
+                        _html.push('<div>'+info.sender+'</div>');
+                        _html.push('<button onclick="chatSubscribe(\''+info.sender+'\')">수락</button>');
+                        $('#chatArea').append(_html.join(''));
+                    }
+                });
+            });
 
-            function fn_chatSend(roomId){
-                const msg = {
-                    roomId : roomId,
-                    sender : userName,
-                    type : 'MESSAGE',
-                    message : $('#message').val()
-                }
-                ws.send(JSON.stringify(msg));
+            function chatSubscribe(id){
+                stompClient.subscribe('/queue/'+id,(frame)=>{
+                    const info = JSON.parse(frame.body);
+                    const _html = [];
+                    $('#chatContent').append(info.message+'<br>');
+                });
+                stompClient.send('/app/js/register',{},JSON.stringify({sender:userName,type:'ENTER'}));
             }
-
-            ws.onopen = (e)=>{
-                const msg = {
-                    sender : userName
-                }
-                ws.send(JSON.stringify(msg));
-            }
-            ws.onclose = ()=>{
-                const msg = {
-                    sender : userName,
-                    type : 'LEAVE'
-                }
-                ws.send(JSON.stringify(msg));
-            }
-            ws.onmessage = (msg)=>{
-                console.log(" msg " , msg);
-            }
-
         </script>
-        <table>
-            <tr>
-                <th>보낸사람</th>
-            </tr>
-            <tr th:each="room : ${rooms}">
-                <td th:text="${room.getSender()}"></td>
-                <td th:text="${room.getRoomId()}"></td>
-                <td>
-                    <input type="text" id="message" name="message" />
-                    <button th:onclick="fn_chatConnect([[${room.getRoomId()}]])">connect</button>
-                    <button th:onclick="fn_chatSend([[${room.getRoomId()}]])">send</button>
-                </td>
-            </tr>
-        </table>
+        <ul id="chatArea">
+
+        </ul>
+        <div id="chatContent"></div>
     </th:block>
 </html>

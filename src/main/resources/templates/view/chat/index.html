@@ -43,72 +43,54 @@
                 })
             })
             const userName = [[${#authentication.principal.username}]];
+            let ws;
+            let userStompClient;
 
-            let ws = new SockJS("http://localhost:8080/ws/chat");
-            let roomId;
+            //채팅요청
+            function fn_managerChat(){
+                ws = new SockJS("/stomp/chat");
+                userStompClient = Stomp.over(ws);
+                userStompClient.connect({}, ()=>{
+                    userStompClient.subscribe('/queue/'+userName,(frame)=>{
+                        const info = JSON.parse(frame.body);
+                        fn_chatMessage(info);
+                    })
+                    userStompClient.send('/topic/admin',{},JSON.stringify({sender:userName}));
+                });
+            }
 
-            ws.onmessage = (msg)=>{
-                console.log(" ON MESSAGE : " , msg);
-                const data = msg.data.split(":");
-                const name = data[0];
-                const sendMsg = data[1];
+            function fn_chatMessage(info){
                 const msgForm = [];
-                const date = new Date(msg.timeStamp);
-
-                // 생성
-                if(name == "room_id"){
-                    roomId = sendMsg;
-                }
-                // 입장
-                else if(name == ""){
-                    msgForm.push("<div class='chat-enter-box mb-3'>"+sendMsg+"</div>");
-                }
-                // 자기 메세지
-                else if(name == userName){
+                const date = new Date(info.timestamp);
+                if(info.type == 'ENTER'){
+                    msgForm.push("<div class='chat-enter-box mb-3'>"+info.message+"</div>");
+                }else if(info.sender == userName){
                     msgForm.push("<ul class='text-right'>");
                     msgForm.push("  <li>");
                     msgForm.push(       "<span class='chat-date'>"+date.getHours() +":"+date.getMinutes()+"</span>");
-                    msgForm.push(       "<span class='chat-msg-box chat-yellow'>"+ sendMsg.replace(/\n/g,'<br/>') +"</span>");
+                    msgForm.push(       "<span class='chat-msg-box chat-yellow'>"+ info.message.replace(/\n/g,'<br/>') +"</span>");
                     msgForm.push("  </li>");
-                    msgForm.push("</ur>");
+                    msgForm.push("</ul>");
                 }else{
                     msgForm.push("<ul>");
                     msgForm.push("  <li class='chat-username'>"+ name +"</li>");
                     msgForm.push("  <li>");
-                    msgForm.push(       "<span class='chat-msg-box bg-white'>"+ sendMsg.replace(/\n/g,'<br/>') +"</span>");
+                    msgForm.push(       "<span class='chat-msg-box bg-white'>"+ info.message.replace(/\n/g,'<br/>') +"</span>");
                     msgForm.push(       "<span class='chat-date'>"+date.getHours() +":"+date.getMinutes()+"</span>");
                     msgForm.push("  </li>");
-                    msgForm.push("</ur>");
+                    msgForm.push("</ul>");
                 }
 
                 $('#msgArea').append(msgForm.join(''));
             }
 
-            ws.onopen = (e)=>{
-                const msg = {
-                    sender : userName,
-                    type : 'CREATE'
-                }
-                ws.send(JSON.stringify(msg));
-            }
-            ws.onclose = (e)=>{
-                const msg = {
-                    sender : userName,
-                    type: 'LEAVE'
-                }
-                ws.send(JSON.stringify(msg));
-            }
-
             function fn_sendMsg(){
-                if($('#sendMsg').val() == '') return false;
                 const msg = {
-                    roomId : roomId,
+                    type: 'MESSAGE',
                     sender : userName,
-                    type : 'MESSAGE',
-                    message : escapeHTML($('#sendMsg').val())
+                    message : $('#sendMsg').val()
                 }
-                $('#sendMsg').val('');
-                ws.send(JSON.stringify(msg));
+                userStompClient.send('/app/'+userName,{},JSON.stringify(msg));
             }
         </script>
         <div class="p-3 col-md-4" style="background:#B3C8DA">
@@ -129,6 +111,7 @@
                     </td>
                 </tr>
             </table>
+            <button class="btn btn-primary btn-sm" onclick="fn_managerChat()">관리자 채팅 요청</button>
         </div>
     </th:block>
 </html>

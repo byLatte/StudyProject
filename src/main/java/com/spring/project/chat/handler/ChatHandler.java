@@ -18,7 +18,6 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 public class ChatHandler extends TextWebSocketHandler {
     private final ObjectMapper objectMapper;
     private final ChatService chatService;
-//    private static Map<String,WebSocketSession> list = new LinkedList<>();
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {

@@ -77,7 +77,7 @@ public class UserController {
             BeanUtils.copyProperties(userForm,user); // userForm을 user에 복사
 
             loginService.save(user);
-            return "view/index";
+            return "view/user/index";
         }
     }
 }

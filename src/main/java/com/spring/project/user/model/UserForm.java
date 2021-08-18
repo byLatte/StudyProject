@@ -16,4 +16,5 @@ public class UserForm {
     private String password;
     @NotEmpty(message = "비밀번호확인을 입력해주세요")
     private String passwordConfirm;
+    private String role = "ROLE_USER";
 }

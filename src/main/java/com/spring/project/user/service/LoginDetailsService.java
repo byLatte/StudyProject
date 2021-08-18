@@ -22,8 +22,6 @@ public class LoginDetailsService implements UserDetailsService {
         if(user == null){
             throw new UsernameNotFoundException(" User Not Found");
         }
-
-
         return new LoginDetails(user);
     }
 }

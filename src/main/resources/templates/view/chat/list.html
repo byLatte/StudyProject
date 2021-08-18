@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-import {hi} from '/js/storage.js'
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorator="~{layout/layout}">
     <th:block layout:fragment="content">
         <script th:inline="javascript">
+
             const userName = [[${#authentication.principal.username}]];
             const ws = new SockJS("/stomp/chat");
             const stompClient = Stomp.over(ws);
@@ -15,26 +15,98 @@ import {hi} from '/js/storage.js'
                     const info = JSON.parse(frame.body);
                     const _html = [];
                     if(!chatList.has(info.sender)){
-                        chatList.add(info.sender);
-                        _html.push('<div>'+info.sender+'</div>');
-                        _html.push('<button onclick="chatSubscribe(\''+info.sender+'\')">수락</button>');
-                        $('#chatArea').append(_html.join(''));
+                        const sender = info.sender;
+                        chatList.add(sender);
+                        _html.push('<div class="col-sm-4" id="'+sender+'_content">');
+                        _html.push('    <div class="card">');
+                        _html.push('        <div class="accordion accordion-flush">');
+                        _html.push('            <div class="accordion-item">');
+                        _html.push('                <h2 class="accordion-header" >');
+                        _html.push('                    <button onclick="fn_chatSubscribe(\''+sender+'\',this)" class="accordion-button collapsed chat-notice-yellow" type="button" data-bs-toggle="collapse" data-bs-target="#flush-'+sender+'" aria-expanded="false" aria-controls="flush-'+sender+'">');
+                        _html.push(sender);
+                        _html.push('                    </button>');
+                        _html.push('                </h2>');
+                        _html.push('                <div id="flush-'+sender+'" class="accordion-collapse collapse" >');
+                        _html.push('                    <div class="accordion-body">');
+                        _html.push('                        <div class="p-3 chat-blue" >');
+                        _html.push('                            <table class="w-100">');
+                        _html.push('                                <tr>');
+                        _html.push('                                    <td>');
+                        _html.push('                                        <div class="msg-area"></div>');
+                        _html.push('                                    </td>');
+                        _html.push('                                </tr>');
+                        _html.push('                                <tr>');
+                        _html.push('                                    <td>');
+                        _html.push('                                        <div class="input-group">');
+                        _html.push('                                            <textarea name="chatTextarea" class="form-control" type="text" placeholder="메세지를 입력하세요." onkeydown="event.keyCode == 13 ? fn_sendMsg(\''+sender+'\') : \'\' "></textarea>');
+                        _html.push('                                            <button class="chat-yellow btn btn-sm float-end" onclick="fn_sendMsg(\''+sender+'\')">전송</button>');
+                        _html.push('                                        </div>');
+                        _html.push('                                    </td>');
+                        _html.push('                                </tr>');
+                        _html.push('                            </table>');
+                        _html.push('                        </div>');
+                        _html.push('                    </div>');
+                        _html.push('                </div>');
+                        _html.push('            </div>');
+                        _html.push('        </div>');
+                        _html.push('    </div>');
+                        _html.push('</div>');
+                        $('#msgContent').append(_html.join(''));
                     }
                 });
             });
 
-            function chatSubscribe(id){
+            // 소켓연결
+            function fn_chatSubscribe(id,obj){
+                $(obj).removeClass('chat-notice-yellow');
                 stompClient.subscribe('/queue/'+id,(frame)=>{
                     const info = JSON.parse(frame.body);
-                    const _html = [];
-                    $('#chatContent').append(info.message+'<br>');
+                    console.log("?? ",info);
+                    fn_chatMessage(info);
                 });
-                stompClient.send('/app/js/register',{},JSON.stringify({sender:userName,type:'ENTER'}));
+                stompClient.send('/app/'+id+'/register',{},JSON.stringify({sender:userName,type:'ENTER'}));
+                $(obj).removeAttr('onclick');
+            }
+
+            // 메세지 폼
+            function fn_chatMessage(info){
+                const msgForm = [];
+                const date = new Date(info.timestamp);
+
+                if(info.sender == userName){
+                    msgForm.push("<ul class='text-right'>");
+                    msgForm.push("  <li>");
+                    msgForm.push(       "<span class='chat-date'>"+date.getHours() +":"+date.getMinutes()+"</span>");
+                    msgForm.push(       "<span class='chat-msg-box chat-yellow'>"+ info.message.replace(/\n/g,'<br/>') +"</span>");
+                    msgForm.push("  </li>");
+                    msgForm.push("</ul>");
+                }else{
+                    msgForm.push("<ul>");
+                    msgForm.push("  <li class='chat-username'>"+ info.sender +"</li>");
+                    msgForm.push("  <li>");
+                    msgForm.push(       "<span class='chat-msg-box bg-white'>"+ info.message.replace(/\n/g,'<br/>') +"</span>");
+                    msgForm.push(       "<span class='chat-date'>"+date.getHours() +":"+date.getMinutes()+"</span>");
+                    msgForm.push("  </li>");
+                    msgForm.push("</ul>");
+                }
+
+                $('#'+info.roomId+'_content .msg-area').append(msgForm.join(''));
+            }
+
+            // 메세지 전달
+            function fn_sendMsg(id){
+                if($('#'+id+'_content textarea[name="chatTextarea"]').val() != ""){
+                    const msg = {
+                        type: 'MESSAGE',
+                        sender : userName,
+                        message : $('#'+id+'_content textarea[name="chatTextarea"]').val(),
+                        roomId : id
+                    }
+                    stompClient.send('/app/'+id,{},JSON.stringify(msg));
+                    $('#'+id+'_content textarea[name="chatTextarea"]').val('');
+                }
             }
         </script>
-        <ul id="chatArea">
-
-        </ul>
-        <div id="chatContent"></div>
+        <div class="row col-sm-12" id="msgContent"></div>
     </th:block>
 </html>

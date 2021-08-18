@@ -1795,3 +1795,9 @@ Caused by: org.h2.jdbc.JdbcSQLInvalidAuthorizationSpecException: Wrong user name
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:461)
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:429)
 	... 55 more
+2021-08-10 21:50:17 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM LOGIN_HIST USER BOARD[*]"; SQL statement:
+SELECT * FROM LOGIN_HIST USER BOARD [42000-200]
+2021-08-10 21:50:20 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM LOGIN_HIST USER BOARD[*] BOARD"; SQL statement:
+SELECT * FROM LOGIN_HIST USER BOARD BOARD [42000-200]

@@ -28,6 +28,7 @@
                         _html.push('                </h2>');
                         _html.push('                <div id="flush-'+sender+'" class="accordion-collapse collapse" >');
                         _html.push('                    <div class="accordion-body">');
+                        _html.push('                    <button class="btn btn-sm btn-danger">상담종료</button>');
                         _html.push('                        <div class="p-3 chat-blue" >');
                         _html.push('                            <table class="w-100">');
                         _html.push('                                <tr>');
@@ -61,7 +62,7 @@
                 $(obj).removeClass('chat-notice-yellow');
                 stompClient.subscribe('/queue/'+id,(frame)=>{
                     const info = JSON.parse(frame.body);
-                    console.log("?? ",info);
+                    console.log("quque connect : ",info);
                     fn_chatMessage(info);
                 });
                 stompClient.send('/app/'+id+'/register',{},JSON.stringify({sender:userName,type:'ENTER'}));
@@ -74,6 +75,7 @@
                 const date = new Date(info.timestamp);
 
                 if(info.sender == userName){
+                    $('#'+info.roomId+'_content textarea[name="chatTextarea"]').val('');
                     msgForm.push("<ul class='text-right'>");
                     msgForm.push("  <li>");
                     msgForm.push(       "<span class='chat-date'>"+date.getHours() +":"+date.getMinutes()+"</span>");
@@ -108,5 +110,6 @@
             }
         </script>
         <div class="row col-sm-12" id="msgContent"></div>
+
     </th:block>
 </html>

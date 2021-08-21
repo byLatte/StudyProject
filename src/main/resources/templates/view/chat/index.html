@@ -34,6 +34,15 @@
                         userStompClient.send('/topic/admin',{},JSON.stringify({sender:userName}));
                     });
                 }
+                ws.close = function() {
+                    const msg = {
+                        type: 'MESSAGE',
+                        sender : userName,
+                        message : 'DISCONNECT',
+                        roomId : userName
+                    }
+                    userStompClient.send('/app/'+userName,{},JSON.stringify(msg));
+                }
             }
 
             function fn_chatMessage(info){
@@ -45,6 +54,8 @@
                 if(info.type == 'ENTER'){
                     msgForm.push("<div class='chat-enter-box mb-3'>"+info.message+"</div>");
                 }else if(info.sender == userName){
+                    $('#sendMsg').val('');
+
                     msgForm.push("<ul class='text-right'>");
                     msgForm.push("  <li>");
                     msgForm.push(       "<span class='chat-date'>"+date.getHours() +":"+date.getMinutes()+"</span>");
@@ -65,13 +76,15 @@
             }
 
             function fn_sendMsg(){
-                const msg = {
-                    type: 'MESSAGE',
-                    sender : userName,
-                    message : $('#sendMsg').val(),
-                    roomId : userName
+                if($('#sendMsg').val() != "" ){
+                    const msg = {
+                        type: 'MESSAGE',
+                        sender : userName,
+                        message : $('#sendMsg').val(),
+                        roomId : userName
+                    }
+                    userStompClient.send('/app/'+userName,{},JSON.stringify(msg));
                 }
-                userStompClient.send('/app/'+userName,{},JSON.stringify(msg));
             }
         </script>
         <button id="btnMangerChat"class="btn btn-primary btn-sm">

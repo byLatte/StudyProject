@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="~{layout/layout}">
+    <th:block layout:fragment="content">
+        <script th:inline="javascript">
+            $(document).ready(()=>{
+                fn_getRooms();
+            })
+
+            function fn_reservation(roomId){
+                $.ajax({
+                    url: '/api/room',
+                    type: 'patch',
+                    data: {
+                        roomId : roomId,
+                        useYn : 'Y'
+                    },
+                    error: function (e) {
+                        alert(e.status);
+                    },
+                    success: function (resp) {
+                        fn_getRooms();
+                    }
+                });
+            }
+
+            function fn_getRooms(){
+                $.ajax({
+                    url: '/api/rooms',
+                    type: 'get',
+                    data: {},
+                    error: function (e) {
+                        alert(e.status);
+                    },
+                    success: function (resp) {
+                        if(resp.data.length > 0 ){
+                            makeRoomList(resp.data);
+                        }
+                    }
+                });
+            }
+
+            function makeRoomList(data){
+                const roomData = [];
+                for(let i = 0; i < data.length; i++){
+                    roomData.push(' <div class="col-1">');
+                    roomData.push(data[i].roomName);
+                    if(data[i].useYn != 'Y'){
+                        roomData.push('<button class="btn btn-sm btn-warning" onclick="fn_reservation('+data[i].roomId+')">예약</button>');
+                    }
+                    roomData.push(' </div>');
+                }
+                $('#roomList').html(roomData.join(''));
+            }
+
+            function fn_addRoom(){
+                $.ajax({
+                    url: '/api/room',
+                    type: 'post',
+                    data: $('#roomForm').serialize(),
+                    error: function (e) {
+                        alert(e.status);
+                    },
+                    success: function (resp) {
+                        fn_getRooms();
+                    }
+                });
+            }
+
+        </script>
+        <div id="roomList" class="row"></div>
+        <div class="col-3">
+            <form id="roomForm" action="/api/room" method="post" onsubmit="return false">
+                <div class="form-floating mb-3">
+                    <input  class="form-control" id="roomName" name="roomName" type="text" placeholder="방이름" />
+                    <label for="roomName">방 이름</label>
+                </div>
+                <button class="btn btn-sm btn-primary" onclick="fn_addRoom()">등록</button>
+            </form>
+        </div>
+    </th:block>
+</html>

@@ -14,6 +14,10 @@
                             <div class="sb-nav-link-icon active"><i class="fas fa-comments"></i></div>
                             채팅 리스트
                         </a>
+                        <a th:classappend="${currentPage eq 'room'} ? 'active' : '' " class="nav-link" href="/room/index">
+                            <div class="sb-nav-link-icon active"><i class="fas fa-comments"></i></div>
+                            예약
+                        </a>
                     </div>
                 </div>
             </nav>
